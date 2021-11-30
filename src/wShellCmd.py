@@ -31,7 +31,3 @@ class PowerShellCmd:
         except Exception as err:
             # print(f"Error in ping function: {err}")
             return 0
-
-
-# Getting service status only with this:
-# Get-Service -name XblAuthManager | select -First 1 -Expand Status

@@ -114,10 +114,10 @@ def slv(ip: List, self_system: str, service_name: str):
 
         time.sleep(config.time_wating)
 
-    master(ip)
+    master(ip, service_name)
 
 
-def master(server_ip: List):
+def master(server_ip: List, service_name: str):
     """Master activator it long, so quit and read withour stress.
 
     When it will work? and How?
@@ -131,6 +131,24 @@ def master(server_ip: List):
     because result of the Ping was False and will jump into next condition, that perform starting service on slave2, if slave2 wasn't able to
     perform service running major, it will back to loop, util one of the server was able to perform service running.
     """
+    shell = wShellCmd.PowerShellCmd()
+
+    while 1:
+        local_machine_service_status = shell.run(
+            f"Get-Service -name {service_name} | select -First 1 -Expand Status"
+        )
+
+        if local_machine_service_status == "Stopped":
+            """"""
+            # Dethrone the score of this server and and assign score to another servers
+            # Updating document
+            
+
+            # Checking return value of ping other servers
+
+            # Priority of running service on which server
+
+        time.sleep(config.time_wating)
 
 
 if args.ip_list and args.init_servers == "yes":

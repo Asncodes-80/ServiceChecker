@@ -10,11 +10,15 @@ class MongoDB:
         self.db = self.client[config.main_config["db"]["db_name"]]
         self.collection = self.db[config.main_config["db"]["collection_name"]]
 
-    def update_server_status(self):
+    def update_server_status(self, server_ip: str, update_value: Dict):
         """Update status
+
+        Dethrone the score of this server and and assign score to another servers
         It will be 0/1 value for know, 0 as service is down in this machine
         and 1 as service is up in this machine.
         """
+        find_obj = {"ip": server_ip}
+        self.collection.update_one(find_obj, {"$set": update_value})
 
     def get_statuses(self, server: str, status_type: str, value: int):
         """Status function
