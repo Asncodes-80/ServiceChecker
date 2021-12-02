@@ -18,13 +18,17 @@ class MongoDB:
         and 1 as service is up in this machine.
         """
         find_obj = {"ip": server_ip}
-        self.collection.update_one(find_obj, {"$set": update_value})
+        update_status_result = self.collection.update_one(
+            find_obj, {"$set": update_value}
+        )
+
+        return 1 if update_status_result.modified_count == 1 else 0
 
     def get_statuses(self, server: str, status_type: str, value: int):
         """Status function
         server_status or service_status
         """
-        self.collection.find_one({"ip": server, status_type: value})
+        return self.collection.find_one({"ip": server, status_type: value})
 
     def init_server_document(self, server_document_initiation: Dict):
         """Init server document
@@ -36,4 +40,5 @@ class MongoDB:
             date_time: Int32 a time for know when this server updated this document
         }
         """
-        self.collection.insert_one(server_document_initiation)
+        init_document_result = self.collection.insert_one(server_document_initiation)
+        return init_document_result.inserted_id

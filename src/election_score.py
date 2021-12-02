@@ -19,7 +19,7 @@ def init_server(server: List):
     m_client = model.MongoDB(config.main_config["db"]["conn_string"])
 
     print(colored("Wait for getting ping, to ensure connection is normal...", "blue"))
-
+    print(colored("Estimated time: 30 seconds", "blue"))
     # Getting ping of server list, and put it back in list of ping as ping_result
     # Will use to having server_status as network status
     ping_result = []
@@ -28,16 +28,22 @@ def init_server(server: List):
         ping_result.append(ping)
 
     print(colored("Ping completed!", "green"))
-
     # Main init server in collection by real data.
     for idx, ip in enumerate(server):
-        init_server = {
-            "ip": ip,
-            "server_status": ping_result[idx],
-            "service_status": 1 if ping_result[idx] == 1 else 0,
-            "date_time": int(datetime.now().timestamp()),
-        }
-        m_client.init_server_document(server_document_initiation=init_server)
+        try:
+            init_server = {
+                "ip": ip,
+                "server_status": ping_result[idx],
+                "service_status": 1 if ping_result[idx] == 1 else 0,
+                "date_time": int(datetime.now().timestamp()),
+            }
+
+            insert_id = m_client.init_server_document(
+                server_document_initiation=init_server
+            )
+            print(colored(f"Server Successfully init! objID: {insert_id}", "green"))
+        except:
+            print(colored("Error in initialize server document in collection.", "red"))
 
 
 def server_specification(system_name):
@@ -150,7 +156,8 @@ def master(
             """
             # Dethrone the score of this server and and assign score to another servers.
             m_client.update_server_status(
-                server_ip=server_ip[self_system_index], status=0
+                server_ip=server_ip[self_system_index],
+                update_value={"service_status": 0},
             )
 
             # Checking return value of ping other servers as slave.
@@ -161,16 +168,18 @@ def master(
             ping_result_slave2 = shell.get_ping(server_ip[server_priority["dev2"]])
 
             # Assign flag to new master.
-            if ping_result_slave1:
+            if ping_result_slave1 == 1:
                 # Active master feature for this computer.
                 m_client.update_server_status(
-                    server_ip=server_ip[server_priority["dev1"]], status=1
+                    server_ip=server_ip[server_priority["dev1"]],
+                    update_value={"service_status": 1},
                 )
                 break
-            elif ping_result_slave2:
+            elif ping_result_slave2 == 1:
                 # Active master feature for this computer.
                 m_client.update_server_status(
-                    server_ip=server_ip[server_priority["dev2"]], status=1
+                    server_ip=server_ip[server_priority["dev2"]],
+                    update_value={"service_status": 1},
                 )
                 break
             else:
