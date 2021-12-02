@@ -3,9 +3,14 @@ name = "pymongo"
 version = "3.12.2"
 summary = "Python driver for MongoDB <http://www.mongodb.org>"
 
+[[package]]
+name = "termcolor"
+version = "1.1.0"
+summary = "ANSII Color formatting for output in terminal."
+
 [metadata]
 lock_version = "3.1"
-content_hash = "sha256:90a3a686bfcdda5919533eca88427161fd91484f0eb0380f52af7246eb33831e"
+content_hash = "sha256:90c3341f8e017c200cc81297cabd07875eb5866065a1239659efa2ea7549b98b"
 
 [metadata.files]
 "pymongo 3.12.2" = [
@@ -115,4 +120,7 @@ content_hash = "sha256:90a3a686bfcdda5919533eca88427161fd91484f0eb0380f52af7246e
     {file = "pymongo-3.12.2-cp39-cp39-win32.whl", hash = "sha256:fb1d60798a7b3c67cc38ad9bbad9c2954490ab76373ad8c162ec31699ce18946"},
     {file = "pymongo-3.12.2-cp39-cp39-win_amd64.whl", hash = "sha256:c214bf8ff2a7dc75c2fcdf7a203f5e392fa1a823adcd0168e5b8e2aca8480c7a"},
     {file = "pymongo-3.12.2.tar.gz", hash = "sha256:64ea5e97fca1a37f83df9f3460bf63640bc0d725e12f3471e6acbf3a6040dd37"},
+]
+"termcolor 1.1.0" = [
+    {file = "termcolor-1.1.0.tar.gz", hash = "sha256:1d6d69ce66211143803fbc56652b41d73b4a400a2891d7bf7a1cdf4c02de613b"},
 ]
