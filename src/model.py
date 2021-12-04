@@ -4,9 +4,9 @@ import config
 
 
 class MongoDB:
-    def __init__(self, connString: str):
-        self.connString = connString
-        self.client = mongo.MongoClient(connString)
+    def __init__(self, conn_string: str):
+        self.conn_string = conn_string
+        self.client = mongo.MongoClient(conn_string)
         self.db = self.client[config.main_config["db"]["db_name"]]
         self.collection = self.db[config.main_config["db"]["collection_name"]]
 

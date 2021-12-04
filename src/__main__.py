@@ -1,5 +1,5 @@
-from termcolor import colored
 import argparse
+from termcolor import colored
 import config
 import election_score as election
 
@@ -16,8 +16,8 @@ for option in config.args_parser_options:
 args = parser.parse_args()
 
 
-def convert_ip_list(ipString: str):
-    return ipString.split(" ")
+def convert_ip_list(ip_string: str):
+    return ip_string.split(" ")
 
 
 if args.ip_list and args.init_servers == "yes":

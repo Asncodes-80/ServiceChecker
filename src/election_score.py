@@ -46,7 +46,7 @@ def init_server(server: List):
             print(colored("Error in initialize server document in collection.", "red"))
 
 
-def server_specification(system_name):
+def server_specification(system_name: str):
     """To Specific server name for getting index of that this function will help us.
 
     Master => 0
@@ -55,11 +55,11 @@ def server_specification(system_name):
     I can use match like switch case in other lang, but we use python 3.7 and i think
     it would not work.
     """
-    if system_name == "master" or system_name == "Master":
+    if system_name.lower() == "master":
         return 0
-    elif system_name == "slave1" or system_name == "Slave1":
+    elif system_name.lower() == "slave1":
         return 1
-    elif system_name == "slave2" or system_name == "Slave2":
+    elif system_name.lower() == "slave2":
         return 2
 
 

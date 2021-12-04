@@ -17,7 +17,7 @@ class PowerShellCmd:
         Pipe "|" of select-string -pattern only for getting replay of ping.
         """
         try:
-            self.run(f"ping -n 1 {ip} | select-string -pattern 'TTL='")
+            res = self.run(f"ping -n 1 {ip} | select-string -pattern 'TTL='")
             # Will return 128 as ttl and keep that as string, to
             # getting only number of ttl like 64 or 128
             ttl = int(res.split(" ")[5].strip()[4:])  # make it integer
@@ -29,5 +29,5 @@ class PowerShellCmd:
                 return 0
 
         except Exception as err:
-            # print(f"Error in ping function: {err}")
+            print(f"Error in ping function: {err}")
             return 0
