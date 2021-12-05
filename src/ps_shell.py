@@ -23,10 +23,7 @@ class PowerShellCmd:
             ttl = int(res.split(" ")[5].strip()[4:])  # make it integer
             # Check if ttl is not 0ms or above of 10ms, True is okay, and
             # False is not connected.
-            if ttl > 10:
-                return 1
-            else:
-                return 0
+            return ttl > 10
 
         except Exception as err:
             print(f"Error in ping function: {err}")

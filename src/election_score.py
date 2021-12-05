@@ -1,10 +1,10 @@
-from termcolor import colored
 from datetime import datetime
 from typing import List
-import wShellCmd
+import time
+from termcolor import colored
 import config
 import model
-import time
+import ps_shell
 
 
 def init_server(server: List):
@@ -15,7 +15,7 @@ def init_server(server: List):
     first ip will by default master and service_status will 1.
     ["10.99.0.13", "10.99.0.14", "10.99.0.15"]
     """
-    ps_cmd = wShellCmd.PowerShellCmd()
+    ps_cmd = ps_shell.PowerShellCmd()
     m_client = model.MongoDB(config.main_config["db"]["conn_string"])
 
     print(colored("Wait for getting ping, to ensure connection is normal...", "blue"))
@@ -23,27 +23,32 @@ def init_server(server: List):
     # Getting ping of server list, and put it back in list of ping as ping_result
     # Will use to having server_status as network status
     ping_result = []
-    for ip in server:
-        ping = ps_cmd.get_ping(ip)  # return 0 or 1
+    for string_ip_ad in server:
+        ping = ps_cmd.get_ping(string_ip_ad)  # return 0 or 1
         ping_result.append(ping)
 
     print(colored("Ping completed!", "green"))
     # Main init server in collection by real data.
-    for idx, ip in enumerate(server):
+    for idx, ip_ad in enumerate(server):
         try:
-            init_server = {
-                "ip": ip,
+            init_server_document = {
+                "ip": ip_ad,
                 "server_status": ping_result[idx],
                 "service_status": 1 if ping_result[idx] == 1 else 0,
                 "date_time": int(datetime.now().timestamp()),
             }
 
             insert_id = m_client.init_server_document(
-                server_document_initiation=init_server
+                server_document_initiation=init_server_document
             )
             print(colored(f"Server Successfully init! objID: {insert_id}", "green"))
-        except:
-            print(colored("Error in initialize server document in collection.", "red"))
+        except Exception as init_server_err:
+            print(
+                colored(
+                    f"Error in initialize server document in collection.\n{init_server_err}",
+                    "red",
+                )
+            )
 
 
 def server_specification(system_name: str):
@@ -57,10 +62,14 @@ def server_specification(system_name: str):
     """
     if system_name.lower() == "master":
         return 0
-    elif system_name.lower() == "slave1":
+
+    if system_name.lower() == "slave1":
         return 1
-    elif system_name.lower() == "slave2":
+
+    if system_name.lower() == "slave2":
         return 2
+
+    return None
 
 
 def define_server_priority(index: int):
@@ -72,23 +81,23 @@ def define_server_priority(index: int):
     This function will return two node index for getting value by index of them, nodes is not important what is slave or what is master
     but with that we can know which system can be master in the process flow.
     """
-    p1: int  # System 1 can be master or other
-    p2: int
+    main_priority: int  # System 1 can be master or other
+    secondary_priority: int
 
     if index == 0:
-        p1 = index + 1
-        p2 = p1 + 1
+        main_priority = index + 1
+        secondary_priority = main_priority + 1
     elif index == 1:
-        p1 = index - 1
-        p2 = index + 1
+        main_priority = index - 1
+        secondary_priority = index + 1
     elif index == 2:
-        p1 = index - 1
-        p2 = p1 - 1
+        main_priority = index - 1
+        secondary_priority = main_priority - 1
 
-    return {"dev1": p1, "dev2": p2}
+    return {"dev1": main_priority, "dev2": secondary_priority}
 
 
-def slv(ip: List, self_system: str, service_name: str):
+def slv(servers_ip: List, self_system: str, service_name: str):
     """Slave activator
 
     When it will work? and How?
@@ -101,11 +110,11 @@ def slv(ip: List, self_system: str, service_name: str):
 
     # Check server_specification function for more detail
     system_index = server_specification(self_system)
-    shell = wShellCmd.PowerShellCmd()
+    shell = ps_shell.PowerShellCmd()
 
     while 1:
         self_check_service = mongo_client.get_statuses(
-            ip[system_index], "service_status", 1
+            servers_ip[system_index], "service_status", 1
         )[0]["service_status"]
 
         # Checking if election for this is prepared
@@ -116,7 +125,7 @@ def slv(ip: List, self_system: str, service_name: str):
         time.sleep(config.time_wating)
 
     # When election is prepared, we will start the service as master of all slaves.
-    master(system_index, ip, service_name, self_system)
+    master(system_index, servers_ip, service_name, self_system)
 
 
 def master(
@@ -134,9 +143,17 @@ def master(
     true will change service_status of slave1 to 1 for continue the service on that server. or if slave1 wasn't able to perform the service
     because result of the Ping was False and will jump into next condition, that perform starting service on slave2, if slave2 wasn't able to
     perform service running major, it will back to loop, util one of the server was able to perform service running.
+
+    What Happend if service status was Stopped?
+    It's not problem, it will put her service_status to 0, and will get ping of
+    server slave1 and slave2, if server slave1 or slave2 was available in network
+    priority is first by Server Slave1 then Slave2. if our assume was server 1 master.
+    But in any situation if our master was slave1 (10.99.0.14), what will happen?
+    I implemented this function as define_server_priority if our servers was 3.
+    In the future i will update that with any number of servers.
     """
     m_client = model.MongoDB(config.main_config["db"]["conn_string"])
-    shell = wShellCmd.PowerShellCmd()
+    shell = ps_shell.PowerShellCmd()
 
     while 1:
         # To getting status of specific service
@@ -145,15 +162,6 @@ def master(
         )
 
         if local_machine_service_status == "Stopped":
-            """What Happend if service status was Stopped?
-
-            It's not problem, it will put her service_status to 0, and will get ping of
-            server slave1 and slave2, if server slave1 or slave2 was available in network
-            priority is first by Server Slave1 then Slave2. if our assume was server 1 master.
-            But in any situation if our master was slave1 (10.99.0.14), what will happen?
-            I implemented this function as define_server_priority if our servers was 3.
-            In the future i will update that with any number of servers.
-            """
             # Dethrone the score of this server and and assign score to another servers.
             m_client.update_server_status(
                 server_ip=server_ip[self_system_index],
@@ -175,28 +183,23 @@ def master(
                     update_value={"service_status": 1},
                 )
                 break
-            elif ping_result_slave2 == 1:
+
+            if ping_result_slave2 == 1:
                 # Active master feature for this computer.
                 m_client.update_server_status(
                     server_ip=server_ip[server_priority["dev2"]],
                     update_value={"service_status": 1},
                 )
                 break
-            else:
-                # We can log this to system log (Syslog).
-                print(
-                    "request time out for all machines, checking your server network."
-                )
-                break
+
+            # Before of break we can log that this server was not able to perform service running.
+            break
 
         time.sleep(config.time_wating)
 
-    """ why we need to go back slv activation function?
-    
-    In order to having infinite loop system, that look like a automatic process.
-    If any system Dethrone the score of mastering, we need to new machine to be master.
-    So if master machine goes off from mastering. this machine will be slave, so will be call 
-    slv activation function.
-    """
-
+    # why we need to go back slv activation function?
+    # In order to having infinite loop system, that look like a automatic process.
+    # If any system Dethrone the score of mastering, we need to new machine to be master.
+    # So if master machine goes off from mastering. this machine will be slave, so will be call
+    # slv activation function.
     slv(server_ip, self_system, service_name)
