@@ -33,7 +33,7 @@ args_parser_options = [
 time_wating = 2
 
 main_config = {
-    "db": {
+    "db_config": {
         "conn_string": "mongodb://188.213.64.78:1000/?readPreference=primary&appname=MongoDB%20Compass&directConnection=true&ssl=false",
         "db_name": "Ayandeh_db",
         "collection_name": "election",

@@ -7,8 +7,10 @@ class MongoDB:
     def __init__(self, conn_string: str):
         self.conn_string = conn_string
         self.client = mongo.MongoClient(conn_string)
-        self.db = self.client[config.main_config["db"]["db_name"]]
-        self.collection = self.db[config.main_config["db"]["collection_name"]]
+        self.db_name = self.client[config.main_config["db_config"]["db_name"]]
+        self.collection = self.db_name[
+            config.main_config["db_config"]["collection_name"]
+        ]
 
     def update_server_status(self, server_ip: str, update_value: Dict):
         """Update status
