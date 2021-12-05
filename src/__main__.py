@@ -24,7 +24,7 @@ if args.ip_list and args.init_servers == "yes":
     election.init_server(server=convert_ip_list(args.ip_list))
 elif args.ip_list and args.self and args.service_name and args.init_servers == "no":
     election.slv(
-        ip=convert_ip_list(args.ip_list),
+        servers_ip=convert_ip_list(args.ip_list),
         self_system=args.self,
         service_name=args.service_name,
     )
