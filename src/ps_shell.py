@@ -10,14 +10,14 @@ class PowerShellCmd:
         )
         return result
 
-    def get_ping(self, ip: str):
+    def get_ping(self, node_ip_add: str):
         """Using the ps of windows in order to having more script flexibility..
 
         ping -n 1 will use for getting only one replay from ping command.
         Pipe "|" of select-string -pattern only for getting replay of ping.
         """
         try:
-            res = self.run(f"ping -n 1 {ip} | select-string -pattern 'TTL='")
+            res = self.run(f"ping -n 1 {node_ip_add} | select-string -pattern 'TTL='")
             # Will return 128 as ttl and keep that as string, to
             # getting only number of ttl like 64 or 128
             ttl = int(res.split(" ")[5].strip()[4:])  # make it integer
