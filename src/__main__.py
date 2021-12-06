@@ -9,7 +9,6 @@ for option in config.args_parser_options:
     parser.add_argument(
         option["name"],
         option["complete_name"],
-        type=option["type"],
         help=option["help"],
     )
 

@@ -7,25 +7,21 @@ args_parser_options = [
     {
         "name": "-ipl",
         "complete_name": "--ip_list",
-        "type": str,
         "help": "IP Address list is your priority list. [master, slave1, slave2]",
     },
     {
         "name": "-s",
         "complete_name": "--self",
-        "type": str,
         "help": "Initialize servers system into collection, only yes or no",
     },
     {
         "name": "-service",
         "complete_name": "--service_name",
-        "type": str,
         "help": "Service name for starting or stopping on the windows ps",
     },
     {
         "name": "-init",
         "complete_name": "--init_servers",
-        "type": str,
         "help": "Initialize servers system into collection, only yes or no",
     },
 ]

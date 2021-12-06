@@ -4,7 +4,7 @@ import subprocess
 class PowerShellCmd:
     ps_default_path = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
 
-    def run(self, cmd):
+    def run(self, cmd) -> str:
         result = str(
             subprocess.check_output([self.ps_default_path, cmd]).decode("utf-8")
         )
