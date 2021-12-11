@@ -41,8 +41,6 @@ def init_server(server: List):
                     "date_time": int(datetime.now().timestamp()),
                 }
 
-                print(1 if ping_result[idx] == 1 else 0)
-
                 insert_id = m_client.init_server_document(
                     server_document_initiation=init_server_document
                 )
