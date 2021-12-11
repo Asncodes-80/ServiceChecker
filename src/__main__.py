@@ -2,6 +2,7 @@ import argparse
 from termcolor import colored
 import config
 import election_score as election
+from init_server import init_server
 
 parser = argparse.ArgumentParser()
 # Process on the list of option in config file
@@ -16,11 +17,17 @@ args = parser.parse_args()
 
 
 def convert_ip_list(ip_string: str):
+    """Convert String ip to real list.
+
+    To have list of ip as string value, user must enter list of that like this:
+    "ip1 ip2 ip3"
+    As i mention before, you must put space between ip.
+    """
     return ip_string.split(" ")
 
 
 if args.ip_list and args.init_servers == "yes":
-    election.init_server(server=convert_ip_list(args.ip_list))
+    init_server(server=convert_ip_list(args.ip_list))
 elif args.ip_list and args.self and args.service_name and args.init_servers == "no":
     election.slv(
         servers_ip=convert_ip_list(args.ip_list),

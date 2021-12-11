@@ -30,8 +30,8 @@ time_wating = 2
 
 main_config = {
     "db_config": {
-        "conn_string": "mongodb://188.213.64.78:1000/?readPreference=primary&appname=MongoDB%20Compass&directConnection=true&ssl=false",
-        "db_name": "Ayandeh_db",
-        "collection_name": "election",
+        "conn_string": "mongodb://172.16.24.14:1000/?readPreference=primary&appname=MongoDB%20Compass&directConnection=true&ssl=false",
+        "db_name": "Ayandeh_DB",
+        "collection_name": "Election",
     },
 }
