@@ -1,7 +1,7 @@
-from datetime import datetime
 from typing import List
 import time
-from termcolor import colored
+
+from pymongo.message import update
 import config
 import model
 import ps_shell
@@ -53,6 +53,60 @@ def define_server_priority(index: int):
     return {"dev1": main_priority, "dev2": secondary_priority}
 
 
+def net_problem_check(self_system_index: int, server_ip: List):
+    """Checking servers from the network problem.
+
+    I will expline this after write that.
+    """
+    # Initialize our important classes
+    shell = ps_shell.PowerShellCmd()
+    mongo_client = model.MongoDB(config.main_config["db_config"]["conn_string"])
+
+    # Getting other server ip address like this:
+    # If this computer was slave1 ~ 14 we will have this ip list [13, 15].
+    # For ensure from we have ping of 13 or 15 we need from ping of those.
+    server_ip: list = server_ip.copy()
+    other_server_ip: list = server_ip.remove(server_ip[self_system_index])
+    ping_sys1: bool = shell.get_ping(other_server_ip[0])
+    ping_sys2: bool = shell.get_ping(other_server_ip[1])
+
+    if ping_sys1 or ping_sys2:
+        # Getting ip of active machine that has service_status value 1
+        master_server: str = mongo_client.find_obj({"service_status", 1})["ip"]
+        # Get ping master_server if was not able
+        ping_master_server: bool = shell.get_ping(master_server)
+        # If ping_master_server was false, we need
+        if not ping_master_server:
+            # Getting active master machine for
+            slave_machines_document: list = mongo_client.find_obj({"service_status": 0})
+            # Set service_status of master machine to 0 and server_status will be 0
+            # Because it left the network!
+            mongo_client.update_server_status(
+                server_ip=master_server, update_value={"service_status": 0}
+            )
+            mongo_client.update_server_status(
+                server_ip=master_server, update_value={"server_status": 0}
+            )
+
+            live_machines_ip = [
+                slave_machines_document[0]["ip"],
+                slave_machines_document[1]["ip"],
+            ]
+            live_machines_priority = [
+                slave_machines_document[0]["priority"],
+                slave_machines_document[1]["priority"],
+            ]
+
+            if live_machines_priority[0] < live_machines_priority[1]:
+                mongo_client.update_server_status(
+                    server_ip=live_machines_ip[0], update_value={"service_status": 1}
+                )
+            else:
+                mongo_client.update_server_status(
+                    server_ip=live_machines_ip[1], update_value={"service_status": 1}
+                )
+
+
 def slv(servers_ip: List, self_system: str, service_name: str):
     """Slave activator
 
@@ -62,21 +116,25 @@ def slv(servers_ip: List, self_system: str, service_name: str):
     Programme will perform that in several of the time to get 1 from service_status value from
     related document. if value was 1, this process will jump from to master function activator.
     """
-    mongo_client = model.MongoDB(config.main_config["db"]["conn_string"])
+    print("slave activator function started!")
+    mongo_client = model.MongoDB(config.main_config["db_config"]["conn_string"])
 
     # Check server_specification function for more detail
     system_index = server_specification(self_system)
     shell = ps_shell.PowerShellCmd()
 
     while 1:
-        self_check_service = mongo_client.get_statuses(
-            servers_ip[system_index], "service_status", 1
-        )[0]["service_status"]
+        self_check_service = mongo_client.find_obj({"ip": servers_ip[system_index]})[
+            "service_status"
+        ]
 
         # Checking if election for this is prepared
         if self_check_service == 1:
             shell.run(f"start-service {service_name}")
             break
+
+        # Checking system if someone was down
+        net_problem_check(self_system_index=system_index, server_ip=servers_ip)
 
         time.sleep(config.time_wating)
 
@@ -108,7 +166,8 @@ def master(
     I implemented this function as define_server_priority if our servers was 3.
     In the future i will update that with any number of servers.
     """
-    m_client = model.MongoDB(config.main_config["db"]["conn_string"])
+    print("Master activator function started!")
+    m_client = model.MongoDB(config.main_config["db_config"]["conn_string"])
     shell = ps_shell.PowerShellCmd()
 
     while 1:
@@ -116,6 +175,7 @@ def master(
         local_machine_service_status = shell.run(
             f"Get-Service -name {service_name} | select -First 1 -Expand Status"
         )
+        print(local_machine_service_status)
 
         if local_machine_service_status == "Stopped":
             # Dethrone the score of this server and and assign score to another servers.

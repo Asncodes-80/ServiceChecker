@@ -6,8 +6,8 @@ import model
 import ps_shell
 
 
-def init_server(server: List):
-    """This init only for initialize server data on the collection document.
+def init_server(server: List, building_name: str):
+    """This init only for initialize server data on the collection document base on building_name param.
 
     only one arg, arg is list of server IP, please use proper priority, because it's
     very important to have first, second and third ip address.
@@ -32,13 +32,15 @@ def init_server(server: List):
         try:
             # This section will find document if before exist in collection
             # And prevent document repeat
-            exist_document = m_client.find_obj(key="ip", value=ip_ad)
-            if not exist_document:
+            exist_document_by_ip = m_client.find_obj({"ip": ip_ad})
+            if not exist_document_by_ip:
                 init_server_document = {
                     "ip": ip_ad,
                     "server_status": 1 if ping_result[idx] else 0,
                     "service_status": 1 if idx == 0 else 0,
                     "date_time": int(datetime.now().timestamp()),
+                    "building_name": building_name,
+                    "priority": idx,  # priority in range(0,3)
                 }
 
                 insert_id = m_client.init_server_document(

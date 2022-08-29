@@ -12,12 +12,17 @@ args_parser_options = [
     {
         "name": "-s",
         "complete_name": "--self",
-        "help": "Initialize servers system into collection, only yes or no",
+        "help": "This system is which one?",
     },
     {
         "name": "-service",
         "complete_name": "--service_name",
         "help": "Service name for starting or stopping on the windows ps",
+    },
+    {
+        "name": "-b",
+        "complete_name": "--building_name",
+        "help": "Add building name for separating in DB",
     },
     {
         "name": "-init",
@@ -31,7 +36,7 @@ time_wating = 2
 main_config = {
     "db_config": {
         "conn_string": "mongodb://172.16.24.14:1000/?readPreference=primary&appname=MongoDB%20Compass&directConnection=true&ssl=false",
-        "db_name": "Ayandeh_DB",
-        "collection_name": "Election",
+        "db_name": "MCI_CPR_DB",
+        "collection_name": "Servers",
     },
 }

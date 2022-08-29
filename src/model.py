@@ -26,8 +26,8 @@ class MongoDB:
 
         return 1 if update_status_result.modified_count == 1 else 0
 
-    def find_obj(self, key, value):
-        return self.collection.find_one({key: value})
+    def find_obj(self, filter: Dict):
+        return self.collection.find_one(filter)
 
     def get_statuses(self, server: str, status_type: str, value: int):
         """Status function
